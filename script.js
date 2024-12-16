@@ -1,140 +1,89 @@
-import com.google.gson.Gson;
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Scanner;
+// Variables globales
+let clickCount = 0;
+let username = localStorage.getItem('username');
+let ipAddress = "Desconocida"; // No estamos usando IP real sin backend, esto es solo un ejemplo.
+const rankingList = JSON.parse(localStorage.getItem('ranking')) || [];
 
-public class UltimateClickerGame {
-    private static final String SUPABASE_URL = "https://mlxuipvhcbmyfrmlsuqd.supabase.co"; // Tu URL de Supabase
-    private static final String SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Tu clave pública de Supabase
-    private static int clickCount = 0;
+document.addEventListener('DOMContentLoaded', function () {
+    // Mostrar IP simulada
+    document.getElementById("ip-span").innerText = "192.168.0.1";  // En un caso real, aquí se debería capturar la IP.
 
-    public static void main(String[] args) {
-        System.out.println("🔥 Ultimate Clicker Challenge 🔥");
-        System.out.println("¡Sé el número uno en el ranking mundial!");
-        
-        // Interactuar con el botón de clic
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("¡Presiona enter para hacer clic!");
-        
-        while (true) {
-            String input = scanner.nextLine();
-            if (input.equals("")) {
-                clickCount++;
-                System.out.println("Tus Clicks: " + clickCount);
-                
-                // Obtener la IP del usuario (usando una API externa)
-                String ip = getUserIP();
-
-                // Guardar los clics en la base de datos de Supabase
-                saveClickData(ip, clickCount);
-                
-                // Mostrar el ranking mundial
-                getLeaderboard();
-            }
-        }
+    // Si el usuario ya tiene un nombre registrado, muestra su información
+    if (username) {
+        document.getElementById("username-container").classList.add("hidden");
+        document.getElementById("user-ip").innerText = `Tu IP es: ${ipAddress}`;
+    } else {
+        document.getElementById("username-container").classList.remove("hidden");
     }
 
-    // Función para obtener la IP del usuario (usando ipify)
-    private static String getUserIP() {
-        try {
-            URL url = new URL("https://api.ipify.org?format=json");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
+    // Mostrar el ranking actual
+    displayRanking();
+});
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // Parsear el JSON de la respuesta
-            Gson gson = new Gson();
-            IpResponse ipResponse = gson.fromJson(response.toString(), IpResponse.class);
-            return ipResponse.getIp();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "Unknown IP";
+// Función para registrar un clic
+function registerClick() {
+    // Si no se ha registrado un nombre de usuario, pide uno
+    if (!username) {
+        alert("Primero debes registrar un nombre de usuario.");
+        return;
     }
 
-    // Función para guardar los clics en la base de datos de Supabase
-    private static void saveClickData(String ip, int clicks) {
-        try {
-            URL url = new URL(SUPABASE_URL + "/rest/v1/clicks");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_KEY);
-            connection.setDoOutput(true);
+    // Incrementar contador de clics
+    clickCount++;
+    document.getElementById("click-count").innerText = clickCount;
 
-            String jsonInputString = String.format("{\"ip\": \"%s\", \"click_count\": %d}", ip, clicks);
-            try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
+    // Guardar el nuevo puntaje en localStorage
+    updateRanking(username, clickCount);
+}
 
-            connection.getResponseCode(); // Hacer la solicitud
+// Función para actualizar el ranking
+function updateRanking(username, clickCount) {
+    // Buscar si el usuario ya está en el ranking
+    const userIndex = rankingList.findIndex(user => user.username === username);
 
-            System.out.println("Clics guardados correctamente.");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    if (userIndex !== -1) {
+        // Si el usuario ya está, actualizar su puntaje
+        rankingList[userIndex].clickCount = clickCount;
+    } else {
+        // Si no está, agregarlo al ranking
+        rankingList.push({ username, clickCount });
     }
 
-    // Función para obtener y mostrar el ranking mundial
-    private static void getLeaderboard() {
-        try {
-            URL url = new URL(SUPABASE_URL + "/rest/v1/clicks?select=ip,click_count&order=click_count.desc&limit=10");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_KEY);
-            
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
+    // Ordenar el ranking por clics en orden descendente
+    rankingList.sort((a, b) => b.clickCount - a.clickCount);
 
-            // Parsear el JSON de la respuesta
-            Gson gson = new Gson();
-            Leaderboard[] leaderboard = gson.fromJson(response.toString(), Leaderboard[].class);
+    // Guardar el ranking actualizado
+    localStorage.setItem('ranking', JSON.stringify(rankingList));
 
-            System.out.println("🏆 Ranking Mundial:");
-            for (Leaderboard entry : leaderboard) {
-                System.out.println(entry.getIp() + ": " + entry.getClickCount() + " clics");
-            }
+    // Mostrar el ranking actualizado
+    displayRanking();
+}
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+// Función para mostrar el ranking
+function displayRanking() {
+    const rankingDiv = document.getElementById("ranking");
+    rankingDiv.innerHTML = ""; // Limpiar el ranking antes de mostrarlo
 
-    // Clases para parsear las respuestas JSON
-    static class IpResponse {
-        private String ip;
+    rankingList.forEach(user => {
+        const userElement = document.createElement("p");
+        userElement.innerText = `${user.username}: ${user.clickCount} clics`;
+        rankingDiv.appendChild(userElement);
+    });
+}
 
-        public String getIp() {
-            return ip;
-        }
-    }
+// Función para registrar el nombre de usuario
+function setUsername() {
+    const usernameInput = document.getElementById("username").value;
 
-    static class Leaderboard {
-        private String ip;
-        private int clickCount;
+    if (usernameInput) {
+        username = usernameInput;
+        localStorage.setItem('username', username);
 
-        public String getIp() {
-            return ip;
-        }
+        document.getElementById("username-container").classList.add("hidden");
+        document.getElementById("user-ip").innerText = `Tu IP es: ${ipAddress}`;
 
-        public int getClickCount() {
-            return clickCount;
-        }
+        alert(`¡Hola ${username}! ¡Bienvenido al juego!`);
+    } else {
+        alert("Por favor, ingresa un nombre de usuario.");
     }
 }
