@@ -1,104 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Clicker Challenge</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0/dist/umd/supabase.min.js"></script>
+    <title>Ultimate Clicker Game</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
-        <header>
-            <h1>🔥 Ultimate Clicker Challenge 🔥</h1>
-            <p class="subtitle">¡Sé el número uno en el ranking mundial!</p>
-        </header>
+    <div class="game-container">
+        <h1>🔥 Ultimate Clicker Challenge 🔥</h1>
+        <p>¡Haz clic para ganar puntos! Sé el número uno en el ranking.</p>
+        
+        <!-- Mostrar IP -->
+        <p id="user-ip">Tu IP es: <span id="ip-span">Cargando...</span></p>
 
-        <main>
-            <div id="score-panel">
-                <p>👆 Tus Clicks:</p>
-                <span id="click-count">0</span>
-            </div>
-            <button id="click-button">¡Clickea Aquí!</button>
-            <div id="leaderboard">
-                <h2>🏆 Ranking Mundial</h2>
-                <ul id="leaderboard-list">
-                    <!-- Aquí se llenará con los datos de Supabase -->
-                </ul>
-            </div>
-        </main>
+        <!-- Mostrar nombre de usuario -->
+        <div id="username-container" class="hidden">
+            <label for="username">Ingresa tu nombre de usuario:</label>
+            <input type="text" id="username" />
+            <button onclick="setUsername()">Registrar nombre de usuario</button>
+        </div>
+
+        <!-- Contador de clics -->
+        <p>¡Tus clics: <span id="click-count">0</span></p>
+
+        <!-- Botón para hacer clic -->
+        <button onclick="registerClick()">Haz clic</button>
+
+        <!-- Mostrar ranking -->
+        <h2>🏆 Ranking de clics 🏆</h2>
+        <div id="ranking">
+            <!-- Los rankings aparecerán aquí -->
+        </div>
     </div>
 
-    <script>
-        // Inicializa Supabase
-        const supabaseUrl = 'https://mlxuipvhcbmyfrmlsuqd.supabase.co'; // Reemplaza con tu URL de Supabase
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1seHVpcHZoY2JteWZybWxzdXFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzNjQyNjYsImV4cCI6MjA0OTk0MDI2Nn0.BB4kCLmcKEFdx3im3eUvK-70fQG-hDQdXMp8WGU8xVQ'; // Reemplaza con tu clave pública de API
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        // Variables
-        let clickCount = 0;
-        const clickButton = document.getElementById('click-button');
-        const clickCountElement = document.getElementById('click-count');
-        const leaderboardList = document.getElementById('leaderboard-list');
-
-        // Maneja los clics
-        clickButton.addEventListener('click', async () => {
-            clickCount++;
-            clickCountElement.textContent = clickCount;
-
-            // Obtener IP del usuario
-            const ip = await getUserIP();
-
-            // Guardar clics con la IP
-            saveClickData(ip, clickCount);
-        });
-
-        // Función para obtener la IP del usuario
-        async function getUserIP() {
-            const response = await fetch('https://api.ipify.org?format=json');
-            const data = await response.json();
-            return data.ip;
-        }
-
-        // Función para guardar los clics en Supabase
-        async function saveClickData(ip, clicks) {
-            const { data, error } = await supabase
-                .from('clicks')
-                .upsert([{ ip, click_count: clicks }]);
-
-            if (error) {
-                console.error('Error al guardar los clics:', error);
-            } else {
-                console.log('Clics guardados correctamente');
-            }
-
-            getLeaderboard();  // Actualizar el ranking
-        }
-
-        // Función para obtener los datos del ranking mundial
-        async function getLeaderboard() {
-            const { data, error } = await supabase
-                .from('clicks')
-                .select('ip, click_count')
-                .order('click_count', { ascending: false })
-                .limit(10);
-
-            if (error) {
-                console.error('Error al obtener el ranking:', error);
-                return;
-            }
-
-            leaderboardList.innerHTML = ''; // Limpiar lista antes de agregar
-            data.forEach(user => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${user.ip}: ${user.click_count} clics`;
-                leaderboardList.appendChild(listItem);
-            });
-        }
-
-        // Llamada inicial para obtener el ranking
-        getLeaderboard();
-
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
