@@ -4,6 +4,9 @@ let username = localStorage.getItem('username');
 let ipAddress = "Desconocida"; // No estamos usando IP real sin backend, esto es solo un ejemplo.
 const rankingList = JSON.parse(localStorage.getItem('ranking')) || [];
 
+// Usamos BroadcastChannel para comunicación entre diferentes pestañas
+const channel = new BroadcastChannel('click_game_channel');
+
 document.addEventListener('DOMContentLoaded', function () {
     // Mostrar IP simulada
     document.getElementById("ip-span").innerText = "192.168.0.1";  // En un caso real, aquí se debería capturar la IP.
@@ -52,11 +55,14 @@ function updateRanking(username, clickCount) {
     // Ordenar el ranking por clics en orden descendente
     rankingList.sort((a, b) => b.clickCount - a.clickCount);
 
-    // Guardar el ranking actualizado
+    // Guardar el ranking actualizado en localStorage
     localStorage.setItem('ranking', JSON.stringify(rankingList));
 
-    // Mostrar el ranking actualizado
+    // Actualizar el ranking en la interfaz para todos los usuarios
     displayRanking();
+
+    // Enviar el ranking actualizado a otras pestañas o ventanas
+    channel.postMessage(rankingList);
 }
 
 // Función para mostrar el ranking
@@ -87,3 +93,12 @@ function setUsername() {
         alert("Por favor, ingresa un nombre de usuario.");
     }
 }
+
+// Escuchar cambios en otras pestañas para actualizar el ranking
+channel.onmessage = function(event) {
+    const updatedRanking = event.data;
+    // Actualizar el ranking de esta pestaña con el nuevo ranking
+    rankingList.length = 0;  // Vaciar el ranking local
+    rankingList.push(...updatedRanking);  // Agregar el ranking actualizado
+    displayRanking();  // Mostrar el ranking actualizado
+};
