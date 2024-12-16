@@ -1,33 +1,27 @@
-// Importar Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-// Configuración de Firebase con los datos proporcionados
-const firebaseConfig = {
-  apiKey: "AIzaSyB2J3X2lIxa55BQv5z0D8RcyrbIU40IFRs",
-  authDomain: "clicksap.firebaseapp.com",
-  projectId: "clicksap",
-  storageBucket: "clicksap.firebasestorage.app",
-  messagingSenderId: "842841718008",
-  appId: "1:842841718008:web:3bb7f097558e07b760cf0d",
-  measurementId: "G-38NKLTXM5C"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Reemplaza con tus credenciales de Supabase
+const supabaseUrl = 'https://mlxuipvhcbmyfrmlsuqd.supabase.co'; // Reemplaza 'your-project-id' con el ID de tu proyecto de Supabase
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1seHVpcHZoY2JteWZybWxzdXFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzNjQyNjYsImV4cCI6MjA0OTk0MDI2Nn0.BB4kCLmcKEFdx3im3eUvK-70fQG-hDQdXMp8WGU8xVQ'; // Reemplaza 'your-anon-key' con tu clave pública de API
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Función para registrar usuarios
 async function registerUser(username, password) {
   try {
-    const docRef = await addDoc(collection(db, "users"), {
-      username: username,
-      password: password
-    });
-    console.log("Usuario registrado con ID: ", docRef.id);
-    alert("Usuario registrado exitosamente!");
+    // Inserta el nuevo usuario en la tabla 'users'
+    const { data, error } = await supabase
+      .from('users')
+      .insert([
+        { username: username, password: password }
+      ]);
+
+    if (error) {
+      console.error("Error al registrar el usuario:", error);
+      alert("Hubo un error al registrar el usuario.");
+    } else {
+      console.log("Usuario registrado con éxito:", data);
+      alert("Usuario registrado exitosamente!");
+    }
   } catch (e) {
-    console.error("Error añadiendo documento: ", e);
+    console.error("Error al registrar el usuario:", e);
     alert("Hubo un error al registrar el usuario.");
   }
 }
@@ -35,23 +29,23 @@ async function registerUser(username, password) {
 // Función para iniciar sesión
 async function loginUser(username, password) {
   try {
-    const querySnapshot = await getDocs(collection(db, "users"));
-    let userFound = false;
+    // Busca el usuario con las credenciales dadas
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .eq('password', password)
+      .single(); // Asegura que solo obtienes un resultado
 
-    querySnapshot.forEach((doc) => {
-      const userData = doc.data();
-      if (userData.username === username && userData.password === password) {
-        userFound = true;
-        alert("¡Inicio de sesión exitoso!");
-        window.location.href = 'juego.html'; // Redirige al juego
-      }
-    });
-
-    if (!userFound) {
+    if (error || !data) {
       alert("Usuario o contraseña incorrectos.");
+    } else {
+      console.log("Usuario encontrado:", data);
+      alert("¡Inicio de sesión exitoso!");
+      window.location.href = 'juego.html'; // Redirige al juego
     }
   } catch (e) {
-    console.error("Error al obtener documentos: ", e);
+    console.error("Error al intentar iniciar sesión:", e);
     alert("Hubo un error al intentar iniciar sesión.");
   }
 }
