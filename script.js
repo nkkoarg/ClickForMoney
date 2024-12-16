@@ -1,75 +1,140 @@
-// Reemplaza con tus credenciales de Supabase
-const supabaseUrl = 'https://mlxuipvhcbmyfrmlsuqd.supabase.co'; // Reemplaza 'your-project-id' con el ID de tu proyecto de Supabase
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1seHVpcHZoY2JteWZybWxzdXFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQzNjQyNjYsImV4cCI6MjA0OTk0MDI2Nn0.BB4kCLmcKEFdx3im3eUvK-70fQG-hDQdXMp8WGU8xVQ'; // Reemplaza 'your-anon-key' con tu clave pública de API
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+import com.google.gson.Gson;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
 
-// Función para registrar usuarios
-async function registerUser(username, password) {
-  try {
-    // Inserta el nuevo usuario en la tabla 'users'
-    const { data, error } = await supabase
-      .from('users')
-      .insert([
-        { username: username, password: password }
-      ]);
+public class UltimateClickerGame {
+    private static final String SUPABASE_URL = "https://mlxuipvhcbmyfrmlsuqd.supabase.co"; // Tu URL de Supabase
+    private static final String SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // Tu clave pública de Supabase
+    private static int clickCount = 0;
 
-    if (error) {
-      console.error("Error al registrar el usuario:", error);
-      alert("Hubo un error al registrar el usuario.");
-    } else {
-      console.log("Usuario registrado con éxito:", data);
-      alert("Usuario registrado exitosamente!");
+    public static void main(String[] args) {
+        System.out.println("🔥 Ultimate Clicker Challenge 🔥");
+        System.out.println("¡Sé el número uno en el ranking mundial!");
+        
+        // Interactuar con el botón de clic
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("¡Presiona enter para hacer clic!");
+        
+        while (true) {
+            String input = scanner.nextLine();
+            if (input.equals("")) {
+                clickCount++;
+                System.out.println("Tus Clicks: " + clickCount);
+                
+                // Obtener la IP del usuario (usando una API externa)
+                String ip = getUserIP();
+
+                // Guardar los clics en la base de datos de Supabase
+                saveClickData(ip, clickCount);
+                
+                // Mostrar el ranking mundial
+                getLeaderboard();
+            }
+        }
     }
-  } catch (e) {
-    console.error("Error al registrar el usuario:", e);
-    alert("Hubo un error al registrar el usuario.");
-  }
-}
 
-// Función para iniciar sesión
-async function loginUser(username, password) {
-  try {
-    // Busca el usuario con las credenciales dadas
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('username', username)
-      .eq('password', password)
-      .single(); // Asegura que solo obtienes un resultado
+    // Función para obtener la IP del usuario (usando ipify)
+    private static String getUserIP() {
+        try {
+            URL url = new URL("https://api.ipify.org?format=json");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
 
-    if (error || !data) {
-      alert("Usuario o contraseña incorrectos.");
-    } else {
-      console.log("Usuario encontrado:", data);
-      alert("¡Inicio de sesión exitoso!");
-      window.location.href = 'juego.html'; // Redirige al juego
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // Parsear el JSON de la respuesta
+            Gson gson = new Gson();
+            IpResponse ipResponse = gson.fromJson(response.toString(), IpResponse.class);
+            return ipResponse.getIp();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "Unknown IP";
     }
-  } catch (e) {
-    console.error("Error al intentar iniciar sesión:", e);
-    alert("Hubo un error al intentar iniciar sesión.");
-  }
+
+    // Función para guardar los clics en la base de datos de Supabase
+    private static void saveClickData(String ip, int clicks) {
+        try {
+            URL url = new URL(SUPABASE_URL + "/rest/v1/clicks");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_KEY);
+            connection.setDoOutput(true);
+
+            String jsonInputString = String.format("{\"ip\": \"%s\", \"click_count\": %d}", ip, clicks);
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            connection.getResponseCode(); // Hacer la solicitud
+
+            System.out.println("Clics guardados correctamente.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Función para obtener y mostrar el ranking mundial
+    private static void getLeaderboard() {
+        try {
+            URL url = new URL(SUPABASE_URL + "/rest/v1/clicks?select=ip,click_count&order=click_count.desc&limit=10");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_KEY);
+            
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // Parsear el JSON de la respuesta
+            Gson gson = new Gson();
+            Leaderboard[] leaderboard = gson.fromJson(response.toString(), Leaderboard[].class);
+
+            System.out.println("🏆 Ranking Mundial:");
+            for (Leaderboard entry : leaderboard) {
+                System.out.println(entry.getIp() + ": " + entry.getClickCount() + " clics");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Clases para parsear las respuestas JSON
+    static class IpResponse {
+        private String ip;
+
+        public String getIp() {
+            return ip;
+        }
+    }
+
+    static class Leaderboard {
+        private String ip;
+        private int clickCount;
+
+        public String getIp() {
+            return ip;
+        }
+
+        public int getClickCount() {
+            return clickCount;
+        }
+    }
 }
-
-// Configurar eventos de los botones en el DOM
-document.addEventListener('DOMContentLoaded', function() {
-  const loginForm = document.getElementById('login-form');
-  const registerForm = document.getElementById('register-form');
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', function(event) {
-      event.preventDefault(); // Evitar el envío del formulario
-      const username = document.getElementById('login-username').value;
-      const password = document.getElementById('login-password').value;
-      loginUser(username, password);
-    });
-  }
-
-  if (registerForm) {
-    registerForm.addEventListener('submit', function(event) {
-      event.preventDefault(); // Evitar el envío del formulario
-      const username = document.getElementById('register-username').value;
-      const password = document.getElementById('register-password').value;
-      registerUser(username, password);
-    });
-  }
-});
