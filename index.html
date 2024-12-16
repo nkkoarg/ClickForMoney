@@ -27,11 +27,6 @@
                 </ul>
             </div>
         </main>
-
-        <footer>
-            <button id="login-button">Iniciar Sesión</button>
-            <button id="logout-button" style="display:none;">Cerrar Sesión</button>
-        </footer>
     </div>
 
     <script>
@@ -45,20 +40,46 @@
         const clickButton = document.getElementById('click-button');
         const clickCountElement = document.getElementById('click-count');
         const leaderboardList = document.getElementById('leaderboard-list');
-        const loginButton = document.getElementById('login-button');
-        const logoutButton = document.getElementById('logout-button');
 
         // Maneja los clics
-        clickButton.addEventListener('click', () => {
+        clickButton.addEventListener('click', async () => {
             clickCount++;
             clickCountElement.textContent = clickCount;
+
+            // Obtener IP del usuario
+            const ip = await getUserIP();
+
+            // Guardar clics con la IP
+            saveClickData(ip, clickCount);
         });
+
+        // Función para obtener la IP del usuario
+        async function getUserIP() {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip;
+        }
+
+        // Función para guardar los clics en Supabase
+        async function saveClickData(ip, clicks) {
+            const { data, error } = await supabase
+                .from('clicks')
+                .upsert([{ ip, click_count: clicks }]);
+
+            if (error) {
+                console.error('Error al guardar los clics:', error);
+            } else {
+                console.log('Clics guardados correctamente');
+            }
+
+            getLeaderboard();  // Actualizar el ranking
+        }
 
         // Función para obtener los datos del ranking mundial
         async function getLeaderboard() {
             const { data, error } = await supabase
-                .from('users')
-                .select('username, click_count')
+                .from('clicks')
+                .select('ip, click_count')
                 .order('click_count', { ascending: false })
                 .limit(10);
 
@@ -70,41 +91,10 @@
             leaderboardList.innerHTML = ''; // Limpiar lista antes de agregar
             data.forEach(user => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `${user.username}: ${user.click_count} clics`;
+                listItem.textContent = `${user.ip}: ${user.click_count} clics`;
                 leaderboardList.appendChild(listItem);
             });
         }
-
-        // Función para registrar un nuevo usuario
-        async function registerUser(username, clickCount) {
-            const { data, error } = await supabase
-                .from('users')
-                .insert([{ username, click_count: clickCount }]);
-
-            if (error) {
-                console.error('Error al registrar el usuario:', error);
-                return;
-            }
-
-            console.log('Usuario registrado:', data);
-            getLeaderboard();  // Actualizar el ranking
-        }
-
-        // Función de login
-        loginButton.addEventListener('click', () => {
-            const username = prompt('Ingresa tu nombre de usuario:');
-            if (username) {
-                registerUser(username, clickCount);
-                loginButton.style.display = 'none';
-                logoutButton.style.display = 'inline-block';
-            }
-        });
-
-        // Función de logout
-        logoutButton.addEventListener('click', () => {
-            loginButton.style.display = 'inline-block';
-            logoutButton.style.display = 'none';
-        });
 
         // Llamada inicial para obtener el ranking
         getLeaderboard();
