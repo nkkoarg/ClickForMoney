@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Clicker Challenge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>🔥 Ultimate Clicker Challenge 🔥</h1>
+            <p class="subtitle">¡Sé el número uno en el ranking mundial!</p>
+        </header>
+
+        <main>
+            <div id="score-panel">
+                <p>👆 Tus Clicks:</p>
+                <span id="click-count">0</span>
+            </div>
+            <button id="click-button">¡Clickea Aquí!</button>
+            <div id="leaderboard">
+                <h2>🏆 Ranking Mundial</h2>
+                <ul id="leaderboard-list">
+                    <!-- Aquí se llenará con Firebase -->
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <button id="login-button">Iniciar Sesión</button>
+            <button id="logout-button" style="display:none;">Cerrar Sesión</button>
+        </footer>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
