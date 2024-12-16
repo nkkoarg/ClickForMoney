@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate Clicker Challenge</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0/dist/umd/supabase.min.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -22,7 +23,7 @@
             <div id="leaderboard">
                 <h2>🏆 Ranking Mundial</h2>
                 <ul id="leaderboard-list">
-                    <!-- Aquí se llenará con Firebase -->
+                    <!-- Aquí se llenará con los datos de Supabase -->
                 </ul>
             </div>
         </main>
@@ -33,8 +34,81 @@
         </footer>
     </div>
 
-    <script src="firebase-config.js"></script>
-    <script src="script.js"></script>
-    <script type="module" src="script.js"></script>
+    <script>
+        // Inicializa Supabase
+        const supabaseUrl = 'https://your-project-id.supabase.co'; // Reemplaza con tu URL de Supabase
+        const supabaseKey = 'your-anon-key'; // Reemplaza con tu clave pública de API
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Variables
+        let clickCount = 0;
+        const clickButton = document.getElementById('click-button');
+        const clickCountElement = document.getElementById('click-count');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const loginButton = document.getElementById('login-button');
+        const logoutButton = document.getElementById('logout-button');
+
+        // Maneja los clics
+        clickButton.addEventListener('click', () => {
+            clickCount++;
+            clickCountElement.textContent = clickCount;
+        });
+
+        // Función para obtener los datos del ranking mundial
+        async function getLeaderboard() {
+            const { data, error } = await supabase
+                .from('users')
+                .select('username, click_count')
+                .order('click_count', { ascending: false })
+                .limit(10);
+
+            if (error) {
+                console.error('Error al obtener el ranking:', error);
+                return;
+            }
+
+            leaderboardList.innerHTML = ''; // Limpiar lista antes de agregar
+            data.forEach(user => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${user.username}: ${user.click_count} clics`;
+                leaderboardList.appendChild(listItem);
+            });
+        }
+
+        // Función para registrar un nuevo usuario
+        async function registerUser(username, clickCount) {
+            const { data, error } = await supabase
+                .from('users')
+                .insert([{ username, click_count: clickCount }]);
+
+            if (error) {
+                console.error('Error al registrar el usuario:', error);
+                return;
+            }
+
+            console.log('Usuario registrado:', data);
+            getLeaderboard();  // Actualizar el ranking
+        }
+
+        // Función de login
+        loginButton.addEventListener('click', () => {
+            const username = prompt('Ingresa tu nombre de usuario:');
+            if (username) {
+                registerUser(username, clickCount);
+                loginButton.style.display = 'none';
+                logoutButton.style.display = 'inline-block';
+            }
+        });
+
+        // Función de logout
+        logoutButton.addEventListener('click', () => {
+            loginButton.style.display = 'inline-block';
+            logoutButton.style.display = 'none';
+        });
+
+        // Llamada inicial para obtener el ranking
+        getLeaderboard();
+
+    </script>
 </body>
 </html>
