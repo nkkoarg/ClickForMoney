@@ -3,52 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Imágenes con Texto</title>
+    <title>Generador de Imagen con Texto</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Yusei+Magic&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="scrollable-container">
-        <div id="logo">
-            <span>by NKKO</span>
+    <div class="container">
+        <h1>Generador de Imagen con Texto</h1>
+
+        <!-- Entrada de texto -->
+        <textarea id="inputText" placeholder="Escribe tu texto aquí"></textarea>
+
+        <!-- Selección de fuente -->
+        <label for="fontSelector">Fuente:</label>
+        <select id="fontSelector">
+            <option value="Arial">Arial</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Courier">Courier</option>
+            <option value="Cursive">Cursive</option>
+        </select>
+
+        <!-- Tamaño de fuente -->
+        <label for="fontSize">Tamaño de fuente:</label>
+        <input type="number" id="fontSize" value="40" min="10" max="100">
+
+        <!-- Color de texto -->
+        <label for="textColor">Color de texto:</label>
+        <input type="color" id="textColor" value="#ffffff">
+
+        <!-- Color de fondo -->
+        <label for="bgColor">Color de fondo:</label>
+        <input type="color" id="bgColor" value="#000000">
+
+        <!-- Opciones de alineación -->
+        <div class="align-options">
+            <button class="align-btn" onclick="setAlignment('left')">Izquierda</button>
+            <button class="align-btn" onclick="setAlignment('center')">Centro</button>
+            <button class="align-btn" onclick="setAlignment('right')">Derecha</button>
         </div>
-        <h1>Generador de Imágenes con Texto</h1>
 
-        <div class="input-group">
-            <input type="text" id="inputText" placeholder="Escribe tu texto aquí">
+        <!-- Indicador de carga -->
+        <div id="loadingIndicator" class="loading-indicator">
+            <span>Cargando...</span>
         </div>
 
-        <div class="input-group">
-            <select id="fontSelector">
-                <option value="Helvetica Neue">Helvetica Neue</option>
-                <option value="Arial">Arial</option>
-                <option value="Courier New">Courier New (Máquina de escribir)</option>
-                <option value="Yusei Magic">Yusei Magic (Estilo japonés)</option>
-            </select>
-        </div>
+        <!-- Botón para generar la imagen -->
+        <button onclick="generateImage()">Generar Imagen</button>
 
-        <div class="input-group">
-            <input type="color" id="textColor" value="#ffffff">
-            <input type="color" id="bgColor" value="#fcd6e3">
-        </div>
+        <!-- Contenedor para la imagen generada -->
+        <div id="galleryContainer" class="gallery-container"></div>
 
-        <div class="input-group">
-            <input type="number" id="fontSize" min="30" max="100" value="53">
-        </div>
-
-        <button class="generate-btn" onclick="generateImage()">Generar Imagen</button>
-
-        <div class="loading" id="loadingIndicator">
-            <p>Generando...</p>
-        </div>
-
-        <div class="gallery" id="galleryContainer"></div>
-
-        <button class="download-btn" id="downloadBtn" style="display:none" onclick="downloadImage()">Descargar Imagen</button>
-
-        <div class="theme-switcher">
-            <button onclick="toggleTheme()">Modo Oscuro/Claro</button>
-        </div>
+        <!-- Botón de descarga de la imagen -->
+        <button id="downloadBtn" style="display: none;">Descargar Imagen</button>
     </div>
 
     <script src="script.js"></script>
