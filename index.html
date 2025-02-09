@@ -1,230 +1,316 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Imágenes con Texto</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Courier+New:wght@700&display=swap');
+<!DOCTYPE html>  <html lang="es">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Generar Imagen con Texto</title>  
+    <style>  
+        body {  
+            font-family: 'Helvetica Neue', Arial, sans-serif;  
+            background-color: #ececec;  
+            margin: 0;  
+            padding: 0;  
+            overflow: hidden;  
+            display: flex;  
+            align-items: center;  
+            justify-content: center;  
+            height: 100vh;  
+            transition: background-color 0.3s ease, color 0.3s ease;  
+        }  
+        #scrollable-container {  
+            width: 100%;  
+            max-width: 900px;  
+            height: 80vh;  
+            overflow-y: auto;  
+            background-color: #ffffff;  
+            border-radius: 12px;  
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);  
+            padding: 30px;  
+            box-sizing: border-box;  
+            position: relative;  
+            transition: background-color 0.3s ease, color 0.3s ease;  
+        }  
+        h1 {  
+            font-size: 28px;  
+            color: #333;  
+            margin-bottom: 20px;  
+            transition: color 0.3s ease;  
+        }  
+        input, button, select, a {  
+            margin-top: 10px;  
+            padding: 12px 20px;  
+            border: none;  
+            border-radius: 6px;  
+            font-size: 18px;  
+            box-sizing: border-box;  
+            outline: none;  
+            transition: all 0.3s ease;  
+        }  
+        input {  
+            width: calc(100% - 24px);  
+            font-size: 18px;  
+            border: 1px solid #ddd;  
+            background-color: #fafafa;  
+        }  
+        input:focus {  
+            border-color: #007BFF;  
+            background-color: #fff;  
+        }  
+        button {  
+            background-color: #007BFF;  
+            color: white;  
+            cursor: pointer;  
+            transition: background-color 0.3s ease, transform 0.3s ease;  
+            padding: 12px 20px;  
+        }  
+        button:hover {  
+            background-color: #0056b3;  
+            transform: scale(1.05);  
+        }  
+        select {  
+            background-color: #f8f9fa;  
+            border: 1px solid #ccc;  
+        }  
+        select:focus {  
+            border-color: #007BFF;  
+            background-color: #fff;  
+        }  
+        a {  
+            background-color: #28a745;  
+            color: white;  
+            text-decoration: none;  
+            display: inline-block;  
+            margin-top: 20px;  
+            transition: background-color 0.3s ease;  
+            padding: 12px 20px;  
+        }  
+        a:hover {  
+            background-color: #218838;  
+        }  
+        canvas {  
+            display: none;  
+        }  
+        .preview {  
+            margin-top: 20px;  
+            border: 1px solid #ddd;  
+            border-radius: 6px;  
+            overflow: hidden;  
+        }  
+        .preview img {  
+            max-width: 100%;  
+            height: auto;  
+        }  
+        .gallery {  
+            margin-top: 20px;  
+            display: flex;  
+            flex-wrap: wrap;  
+            justify-content: center;  
+        }  
+        .gallery-item {  
+            position: relative;  
+            margin: 5px;  
+            border-radius: 6px;  
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);  
+            transition: transform 0.3s ease;  
+        }  
+        .gallery-item:hover {  
+            transform: scale(1.05);  
+        }  
+        .gallery-item img {  
+            max-width: 150px;  
+            height: auto;  
+            border-radius: 6px;  
+        }  
+        .gallery-item .download-button {  
+            position: absolute;  
+            bottom: 0;  
+            left: 0;  
+            right: 0;  
+            background-color: rgba(0, 0, 0, 0.6);  
+            color: #fff;  
+            text-align: center;  
+            padding: 5px;  
+            border-top: 1px solid rgba(0, 0, 0, 0.3);  
+        }  
+        .settings {  
+            margin-top: 20px;  
+            display: flex;  
+            flex-direction: column;  
+            align-items: center;  
+        }  
+        .loading {  
+            display: none;  
+            margin-top: 20px;  
+        }  
+        .loading.show {  
+            display: block;  
+        }  
+        .loading img {  
+            width: 50px;  
+        }  
+        .theme-switcher {  
+            margin-top: 20px;  
+            text-align: center;  
+        }  
+        .theme-switcher button {  
+            background-color: #343a40;  
+            color: #ffffff;  
+            border: 1px solid #343a40;  
+            transition: background-color 0.3s ease;  
+        }  
+        .theme-switcher button:hover {  
+            background-color: #495057;  
+        }  /* Estilos para el modo oscuro */  
+    body.dark-theme {  
+        background-color: #121212;  
+        color: #e0e0e0;  
+    }  
+    body.dark-theme #scrollable-container {  
+        background-color: #1e1e1e;  
+        color: #e0e0e0;  
+    }  
+    body.dark-theme h1 {  
+        color: #e0e0e0;  
+    }  
+    body.dark-theme input {  
+        background-color: #2c2c2c;  
+        border-color: #444;  
+        color: #e0e0e0;  
+    }  
+    body.dark-theme input:focus {  
+        border-color: #007BFF;  
+        background-color: #3a3a3a;  
+    }  
+    body.dark-theme button {  
+        background-color: #444;  
+        color: #e0e0e0;  
+    }  
+    body.dark-theme button:hover {  
+        background-color: #333;  
+    }  
+    body.dark-theme select {  
+        background-color: #2c2c2c;  
+        border-color: #444;  
+        color: #e0e0e0;  
+    }  
+    body.dark-theme a {  
+        background-color: #1e7e34;  
+        color: #e0e0e0;  
+    }  
+    body.dark-theme a:hover {  
+        background-color: #1a6e2a;  
+    }  
+    body.dark-theme .gallery-item {  
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);  
+    }  
+</style>
 
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(120deg, #ececec, #d6d6d6);
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            transition: background 0.3s ease, color 0.3s ease;
-        }
+</head>  
+<body>  
+    <div id="scrollable-container">  
+        <h1>Generar Imagen con Texto</h1>  
+        <input type="text" id="inputText1" placeholder="Ingrese el primer texto aquí">  
+        <input type="text" id="inputText2" placeholder="Ingrese el segundo texto aquí">  
+        <input type="text" id="inputText3" placeholder="Ingrese el tercer texto aquí">  
+        <input type="text" id="inputText4" placeholder="Ingrese el cuarto texto aquí">  
+        <input type="text" id="inputText5" placeholder="Ingrese el quinto texto aquí">  <div class="settings">  
+        <select id="fontSelector" onchange="generateImages()">  
+            <option value="Helvetica Neue">Helvetica Neue</option>  
+            <option value="Arial">Arial</option>  
+            <option value="Times New Roman">Times New Roman</option>  
+        </select>  
+        <input type="color" id="textColor" value="#ffffff" onchange="generateImages()">  
+        <input type="color" id="bgColor" value="#1e1e1e" onchange="generateImages()">  
+        <input type="number" id="fontSize" min="30" max="100" value="53" onchange="generateImages()">  
+        <input type="range" id="opacity" min="0" max="1" step="0.1" value="1" onchange="generateImages()">  
+        <input type="number" id="margin" min="0" max="200" value="10" onchange="generateImages()">  
+    </div>  
 
-        #scrollable-container {
-            width: 90%;
-            max-width: 900px;
-            height: 85vh;
-            overflow-y: auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            box-sizing: border-box;
-            position: relative;
-            animation: fadeIn 0.8s ease-in-out;
-        }
+    <button onclick="generateImages()">Generar Imágenes</button>  
+    <br>  
+    <div class="loading" id="loadingIndicator">  
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif" alt="Cargando">  
+    </div>  
+    <div id="previewContainer" class="preview"></div>  
+    <div id="galleryContainer" class="gallery"></div>  
 
-        h1 {
-            font-size: 28px;
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-            animation: slideInDown 1s ease-in-out;
-        }
+    <div class="theme-switcher">  
+        <button onclick="toggleTheme()">Modo Oscuro/Claro</button>  
+    </div>  
+</div>  
 
-        input, button, select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            transition: all 0.3s ease;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-        }
+<script>  
+    function generateImages() {  
+        document.getElementById('loadingIndicator').classList.add('show');  
+        setTimeout(() => {  
+            document.getElementById('loadingIndicator').classList.remove('show');  
+            const canvas = document.createElement('canvas');  
+            const ctx = canvas.getContext('2d');  
+            const texts = [  
+                document.getElementById('inputText1').value.toUpperCase(),  
+                document.getElementById('inputText2').value.toUpperCase(),  
+                document.getElementById('inputText3').value.toUpperCase(),  
+                document.getElementById('inputText4').value.toUpperCase(),  
+                document.getElementById('inputText5').value.toUpperCase()  
+            ];  
 
-        input {
-            background: #f9f9f9;
-            border: 2px solid #ddd;
-        }
+            const font = document.getElementById('fontSelector').value;  
+            const textColor = document.getElementById('textColor').value;  
+            const bgColor = document.getElementById('bgColor').value;  
+            const fontSize = document.getElementById('fontSize').value;  
+            const opacity = document.getElementById('opacity').value;  
+            const margin = document.getElementById('margin').value;  
 
-        input:focus {
-            border-color: #007BFF;
-            background: #fff;
-            transform: scale(1.02);
-        }
+            const galleryContainer = document.getElementById('galleryContainer');  
+            galleryContainer.innerHTML = ''; // Limpiar la galería  
 
-        button {
-            background: #007BFF;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
+            texts.forEach((text, index) => {  
+                if (text.trim() === '') return;  
 
-        button:hover {
-            background: #0056b3;
-            transform: scale(1.05);
-        }
+                canvas.width = 1000;  
+                canvas.height = 1000;  
+                const ctx = canvas.getContext('2d');  
+                  
+                ctx.fillStyle = bgColor;  
+                ctx.fillRect(0, 0, canvas.width, canvas.height);  
+                  
+                ctx.font = `italic bold ${fontSize}px ${font}`;  
+                ctx.fillStyle = textColor;  
+                ctx.textAlign = 'center';  
+                ctx.textBaseline = 'middle';  
+                ctx.globalAlpha = opacity;  
 
-        select {
-            background: #f8f9fa;
-            border: 2px solid #ccc;
-        }
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';  
+                ctx.shadowBlur = 10;  
+                ctx.shadowOffsetX = 4;  
+                ctx.shadowOffsetY = 4;  
 
-        select:focus {
-            border-color: #007BFF;
-        }
+                ctx.fillText(text, canvas.width / 2, canvas.height / 2);  
 
-        .gallery {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
+                const img = new Image();  
+                img.src = canvas.toDataURL('image/png');  
+                img.alt = 'Imagen Generada';  
+                img.width = 150;  
 
-        .gallery-item {
-            position: relative;
-            transition: transform 0.3s ease-in-out;
-        }
+                const downloadLink = document.createElement('a');  
+                downloadLink.href = img.src;  
+                downloadLink.download = `imagen_${index + 1}.png`;  
+                downloadLink.textContent = 'Descargar';  
+                downloadLink.classList.add('download-button');  
 
-        .gallery-item:hover {
-            transform: scale(1.1);
-        }
+                const galleryItem = document.createElement('div');  
+                galleryItem.classList.add('gallery-item');  
+                galleryItem.appendChild(img);  
+                galleryItem.appendChild(downloadLink);  
 
-        .gallery-item img {
-            max-width: 150px;
-            border-radius: 8px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-        }
+                galleryContainer.appendChild(galleryItem);  
+            });  
+        }, 500); // Tiempo de carga ficticio  
+    }  
 
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-        }
+    function toggleTheme() {  
+        document.body.classList.toggle('dark-theme');  
+    }  
+</script>
 
-        .loading.show {
-            display: block;
-        }
-
-        .theme-switcher button {
-            background: #343a40;
-            color: white;
-            border: none;
-            cursor: pointer;
-            padding: 12px;
-            border-radius: 8px;
-            width: 100%;
-            margin-top: 20px;
-            font-weight: bold;
-            transition: transform 0.5s ease;
-        }
-
-        .theme-switcher button:hover {
-            transform: rotateY(180deg);
-        }
-
-        /* Modo oscuro */
-        body.dark-theme {
-            background: #121212;
-            color: #e0e0e0;
-        }
-
-        body.dark-theme #scrollable-container {
-            background: #1e1e1e;
-            color: #e0e0e0;
-        }
-
-        /* Animaciones */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideInDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-    </style>
-</head>
-<body>
-    <div id="scrollable-container">
-        <h1>Generar Imagen con Texto</h1>
-        <input type="text" id="inputText" placeholder="Escribe tu texto aquí">
-
-        <select id="fontSelector">
-            <option value="Helvetica Neue">Helvetica Neue</option>
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Courier New">Courier New (Máquina de escribir)</option>
-            <option value="Impact">Impact</option>
-            <option value="Comic Sans MS">Comic Sans MS</option>
-        </select>
-
-        <input type="color" id="textColor" value="#ffffff">
-        <input type="color" id="bgColor" value="#1e1e1e">
-        <input type="number" id="fontSize" min="30" max="100" value="53">
-        <button onclick="generateImage()">Generar Imagen</button>
-
-        <div class="loading" id="loadingIndicator">
-            <p>Generando...</p>
-        </div>
-
-        <div class="gallery" id="galleryContainer"></div>
-
-        <div class="theme-switcher">
-            <button onclick="toggleTheme()">Modo Oscuro/Claro</button>
-        </div>
-    </div>
-
-    <script>
-        function generateImage() {
-            document.getElementById('loadingIndicator').classList.add('show');
-
-            setTimeout(() => {
-                document.getElementById('loadingIndicator').classList.remove('show');
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const text = document.getElementById('inputText').value.toUpperCase();
-                const font = document.getElementById('fontSelector').value;
-                const textColor = document.getElementById('textColor').value;
-                const bgColor = document.getElementById('bgColor').value;
-                const fontSize = document.getElementById('fontSize').value;
-
-                canvas.width = 1000;
-                canvas.height = 1000;
-
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                ctx.font = `bold ${fontSize}px ${font}`;
-                ctx.fillStyle = textColor;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-
-                const img = new Image();
-                img.src = canvas.toDataURL('image/png');
-                img.width = 150;
-
-                document.getElementById('galleryContainer').appendChild(img);
-            }, 500);
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('dark-theme');
-        }
-    </script>
-</body>
+</body>  
 </html>
