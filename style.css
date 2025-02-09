@@ -9,21 +9,45 @@ body {
     align-items: center;
     height: 100vh;
     color: #333;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
 }
 
 .container {
     text-align: center;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.9);
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     width: 500px;
+    position: relative;
+    animation: slideIn 1s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 h1 {
     font-size: 2.5rem;
     margin-bottom: 20px;
     color: #ff69b4; /* Color rosa */
+    font-family: 'Cursive', sans-serif;
+    animation: fadeIn 2s ease-out;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 /* Estilo para los campos de entrada y selección */
@@ -34,6 +58,12 @@ textarea, select, input[type="number"], input[type="color"] {
     border-radius: 8px;
     border: 2px solid #ccc;
     font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+textarea:focus, select:focus, input[type="number"]:focus, input[type="color"]:focus {
+    outline: none;
+    border-color: #ff69b4;
 }
 
 /* Estilo de los botones */
@@ -46,11 +76,12 @@ button {
     font-size: 18px;
     cursor: pointer;
     margin: 10px 0;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 button:hover {
     background-color: #ff1493; /* Rosa más oscuro */
+    transform: scale(1.1);
 }
 
 /* Estilo de los botones de alineación */
@@ -80,6 +111,8 @@ button:hover {
 .loading-indicator {
     display: none;
     margin-top: 20px;
+    color: #ff69b4;
+    font-size: 1.5rem;
 }
 
 .loading-indicator.show {
