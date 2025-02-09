@@ -34,12 +34,17 @@ function generateImage() {
     ctx.fillStyle = textColor;
     ctx.textAlign = textAlignment; // Aplicamos la alineación seleccionada
     ctx.textBaseline = 'middle';
-    
+
+    // Calcular el tamaño del texto y la posición para evitar que se salga de la imagen
+    const textWidth = ctx.measureText(text).width;
+    const x = (canvas.width - textWidth) / 2;  // Alineación centrada por defecto
+    const y = canvas.height / 2;
+
     // Escribir el texto en el canvas con la alineación seleccionada
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    ctx.fillText(text, x, y);
 
     // Convertir el canvas a una URL de imagen
-    generatedImageUrl = canvas.toDataURL('image/png');
+    const generatedImageUrl = canvas.toDataURL('image/png');
 
     // Ocultar el indicador de carga
     document.getElementById('loadingIndicator').classList.remove('show');
