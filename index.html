@@ -3,34 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Clicker Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Generador de Imágenes con Texto</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Yusei+Magic&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="game-container">
-        <h1>🔥 Ultimate Clicker Challenge 🔥</h1>
-        <p>¡Haz clic para ganar puntos! Sé el número uno en el ranking.</p>
-        
-        <!-- Mostrar IP -->
-        <p id="user-ip">Tu IP es: <span id="ip-span">Cargando...</span></p>
+    <div id="scrollable-container">
+        <div id="logo">
+            <span>by NKKO</span>
+        </div>
+        <h1>Generador de Imágenes con Texto</h1>
 
-        <!-- Mostrar nombre de usuario -->
-        <div id="username-container" class="hidden">
-            <label for="username">Ingresa tu nombre de usuario:</label>
-            <input type="text" id="username" />
-            <button onclick="setUsername()">Registrar nombre de usuario</button>
+        <div class="input-group">
+            <input type="text" id="inputText" placeholder="Escribe tu texto aquí">
         </div>
 
-        <!-- Contador de clics -->
-        <p>¡Tus clics: <span id="click-count">0</span></p>
+        <div class="input-group">
+            <select id="fontSelector">
+                <option value="Helvetica Neue">Helvetica Neue</option>
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New (Máquina de escribir)</option>
+                <option value="Yusei Magic">Yusei Magic (Estilo japonés)</option>
+            </select>
+        </div>
 
-        <!-- Botón para hacer clic -->
-        <button onclick="registerClick()">Haz clic</button>
+        <div class="input-group">
+            <input type="color" id="textColor" value="#ffffff">
+            <input type="color" id="bgColor" value="#fcd6e3">
+        </div>
 
-        <!-- Mostrar ranking -->
-        <h2>🏆 Ranking de clics 🏆</h2>
-        <div id="ranking">
-            <!-- Los rankings aparecerán aquí -->
+        <div class="input-group">
+            <input type="number" id="fontSize" min="30" max="100" value="53">
+        </div>
+
+        <button class="generate-btn" onclick="generateImage()">Generar Imagen</button>
+
+        <div class="loading" id="loadingIndicator">
+            <p>Generando...</p>
+        </div>
+
+        <div class="gallery" id="galleryContainer"></div>
+
+        <button class="download-btn" id="downloadBtn" style="display:none" onclick="downloadImage()">Descargar Imagen</button>
+
+        <div class="theme-switcher">
+            <button onclick="toggleTheme()">Modo Oscuro/Claro</button>
         </div>
     </div>
 
