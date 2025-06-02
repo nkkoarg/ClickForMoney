@@ -121,17 +121,23 @@
   </div>
 
   <script>
-    let clicks = 0;
+    let clicks = parseInt(localStorage.getItem("clicks")) || 0;
     const counter = document.getElementById("clickCount");
     const adBox = document.getElementById("adBox");
 
+    // Mostrar el número guardado al cargar
+    counter.textContent = clicks;
+
     function handleClick() {
       clicks++;
+      localStorage.setItem("clicks", clicks);
       counter.textContent = clicks;
-      counter.classList.add("bounce");
 
+      // Animación
+      counter.classList.add("bounce");
       setTimeout(() => counter.classList.remove("bounce"), 150);
 
+      // Mostrar anuncio cada 5 clics
       if (clicks % 5 === 0) {
         adBox.classList.add("show");
       } else {
